@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Déploiement du framework MITRE CALDERA sur 3 VM Debian et simulation d&#x27;attaque et de défense en 2 contre 2.">
+    <title>Simulation Red Team vs Blue Team avec CALDERA – Oussama Denia</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header">
+    <a href="index.html" class="logo">Oussama Denia</a>
+    <nav class="navbar" id="navbar">
+        <a href="index.html#about">À propos</a>
+        <a href="index.html#skills">Compétences</a>
+        <a href="index.html#experience">Stages</a>
+        <a href="projets.html" class="active">Projets</a>
+        <a href="index.html#veille">Veille</a>
+        <a href="index.html#contact">Contact</a>
+    </nav>
+    <div class="tools">
+        <button id="theme-toggle" aria-label="Changer de thème"><i class='bx bx-moon'></i></button>
+        <button id="menu-icon" aria-label="Ouvrir le menu"><i class='bx bx-menu'></i></button>
+    </div>
+</header>
+<main>
+<section class="page">
+<nav class="crumbs" aria-label="Fil d'Ariane"><a href="index.html">Accueil</a><span aria-hidden="true">/</span><a href="projets.html">Projets</a><span aria-hidden="true">/</span><span>Simulation Red Team vs Blue Team avec CALDERA</span></nav>
+<div class="doc">
+<div class="meta-row"><span>Stage Novatiel</span><span>Rapport du 30/06/2026</span><span>VM Debian</span></div>
+<h1>Simulation Red Team vs Blue Team avec CALDERA</h1>
+<p class="lead">Mise en place d'un laboratoire d'attaque-défense avec le framework MITRE CALDERA, pendant mon stage chez Novatiel.</p>
+<div class="tags"><span>CALDERA</span><span>MITRE ATT&CK</span><span>Debian</span><span>Red/Blue Team</span></div>
+<nav class="toc" aria-label="Sommaire"><a href="#contexte">Contexte</a><a href="#architecture">Architecture</a><a href="#installation">Installation</a><a href="#problemes">Problèmes</a><a href="#plugins">Plugins</a><a href="#agents">Agents</a><a href="#scenario">Scénario</a><a href="#simulation">Simulation</a><a href="#resultats">Analyse</a><a href="#conclusion">Conclusion</a></nav>
+
+<h2 id="contexte">Contexte et objectifs</h2>
+<p>Ce projet, réalisé pendant mon stage <strong>cybersécurité chez Novatiel</strong>, consiste à déployer <strong>CALDERA</strong>, un framework open source développé par le MITRE, pour simuler un affrontement entre une équipe offensive (<strong>Red Team</strong>) et une équipe défensive (<strong>Blue Team</strong>) dans un laboratoire isolé.</p>
+<p>L'objectif est de comprendre comment fonctionnent les cyberattaques modernes en s'appuyant sur le référentiel <strong>MITRE ATT&amp;CK</strong>, qui catalogue les tactiques, techniques et procédures (TTP) de véritables groupes d'attaquants.</p>
+<div class="callout"><h3>Objectifs techniques</h3><ul>
+<li>Déployer un serveur CALDERA fonctionnel sur une machine virtuelle Debian.</li>
+<li>Monter une architecture à plusieurs VM (serveur, attaquant, défenseur) pour simuler un réseau d'entreprise.</li>
+<li>Répartir quatre rôles : deux attaquants et deux défenseurs.</li>
+<li>Exécuter une opération offensive automatisée à partir d'un profil d'adversaire ATT&amp;CK.</li>
+<li>Documenter les résultats et produire des recommandations exploitables.</li></ul></div>
+
+<h2 id="architecture">Architecture de l'environnement</h2>
+<p>Trois machines virtuelles Debian, créées par clonage à partir d'une installation de base, simulent un poste attaquant et un poste défenseur qui communiquent avec un serveur central.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">VM</th><th scope="col">Rôle</th><th scope="col">Adresse IP</th><th scope="col">Composants</th></tr></thead><tbody><tr><td>VM Serveur</td><td>Héberge CALDERA (serveur et interface web Magma)</td><td>192.168.X.10</td><td>Python 3, venv, Go, Node.js, CALDERA</td></tr><tr><td>VM Attaquant (clone)</td><td>Exécute les agents du groupe <code>red</code></td><td>192.168.X.11</td><td>Agents Sandcat (Alex, Sam)</td></tr><tr><td>VM Défenseur (clone)</td><td>Exécute les agents du groupe <code>blue</code></td><td>192.168.X.12</td><td>Agents Sandcat (Morgan, Jordan)</td></tr></tbody></table></div>
+<p>Les adresses dépendent du réseau local (mode Bridge ou Host-only de l'hyperviseur) et se relèvent avec <code>ip a</code> sur chaque VM.</p>
+<div class="diagram" role="img" aria-label="Schéma : la VM serveur CALDERA communique en HTTP sur le port 8888 avec la VM attaquant (red) et la VM défenseur (blue)">
+  <div class="node srv"><b>VM Serveur CALDERA</b>192.168.X.10 : 8888<br>server.py --insecure</div>
+  <div class="link">HTTP(S) :8888 ↓ ↓ HTTP(S) :8888</div>
+  <div class="row">
+    <div class="node red"><b>VM Attaquant (Red)</b>192.168.X.11<br>Agents Alex et Sam</div>
+    <div class="node blue"><b>VM Défenseur (Blue)</b>192.168.X.12<br>Agents Morgan et Jordan</div>
+  </div>
+</div>
+
+<h2 id="installation">Installation du serveur</h2>
+<h3>Prérequis système</h3>
+<pre class="term"><code>sudo apt update &amp;&amp; sudo apt upgrade -y
+sudo apt install -y git python3 python3-pip python3-venv curl wget nodejs npm</code></pre>
+<h3>Clonage et dépendances Python</h3>
+<pre class="term"><code>git clone https://github.com/mitre/caldera.git --recursive
+cd caldera
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt</code></pre>
+<h3>Installation manuelle de Go</h3>
+<p>L'interface web de CALDERA v5 (plugin Magma) est écrite en Vue.js et nécessite Go pour être compilée. La version fournie par le paquet <code>apt</code> de Debian était trop ancienne (inférieure à 1.19) : j'ai donc installé Go à la main.</p>
+<pre class="term"><code>wget https://go.dev/dl/go1.21.0.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf go1.21.0.linux-amd64.tar.gz
+export PATH=$PATH:/usr/local/go/bin
+echo 'export PATH=$PATH:/usr/local/go/bin' &gt;&gt; ~/.bashrc
+source ~/.bashrc</code></pre>
+<h3>Premier lancement, puis lancements suivants</h3>
+<p>Le build du front-end a pris environ 18 secondes (confirmé par le log <code>VueJS front-end build complete</code>). Ensuite, le flag <code>--build</code> n'est plus nécessaire, sauf si le code de l'interface change.</p>
+<pre class="term"><code><span class="c"># Premier lancement (compile l'interface)</span>
+source venv/bin/activate
+python3 server.py --insecure --build
+
+<span class="c"># Lancements suivants</span>
+cd ~/caldera
+source venv/bin/activate
+python3 server.py --insecure</code></pre>
+
+<h2 id="problemes">Problèmes rencontrés et solutions</h2>
+<p>Le déploiement a demandé de résoudre plusieurs erreurs classiques. Je les ai documentées pour pouvoir refaire l'installation sans perdre de temps.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">#</th><th scope="col">Problème</th><th scope="col">Cause</th><th scope="col">Solution</th></tr></thead><tbody><tr><td>1</td><td><code>Template ’index.html’ not found</code></td><td>Plugin Magma (interface Vue.js) non compilé</td><td>Lancer le serveur avec <code>--build</code> après avoir installé Go ≥ 1.19</td></tr><tr><td>2</td><td><code>go does not meet the minimum version of 1.19</code></td><td>Version de Go trop ancienne dans les dépôts Debian</td><td>Installation manuelle de Go 1.21 et mise à jour du <code>PATH</code></td></tr><tr><td>3</td><td><code>Magma plugin dist not found</code></td><td>Composants Vue non construits</td><td><code>python3 server.py --insecure --build</code> (environ 18 s)</td></tr><tr><td>4</td><td><code>OSError: address already in use</code> (port 8888)</td><td>Une instance de <code>server.py</code> tournait déjà en arrière-plan</td><td>Trouver le PID avec <code>lsof -i :8888</code>, puis <code>kill -9 &lt;PID&gt;</code> ou <code>pkill -f server.py</code></td></tr><tr><td>5</td><td><code>ModuleNotFoundError: No module named ’rich’</code></td><td>Environnement virtuel non activé</td><td><code>source venv/bin/activate</code> avant de relancer</td></tr><tr><td>6</td><td>Plugin <code>response</code> absent du menu alors que les logs sont corrects</td><td>Cache du navigateur ou <code>local.yml</code> incomplet</td><td>Vérifier <code>conf/local.yml</code> et recharger sans cache (Ctrl+Maj+R). <strong>Encore en cours de diagnostic.</strong></td></tr></tbody></table></div>
+<div class="callout warn"><h3>Comptes par défaut</h3>
+<p>Lancé avec <code>--insecure</code>, CALDERA crée des comptes de démonstration : <code>admin</code> (accès complet), <code>red</code> (fonctions offensives) et <code>blue</code> (fonctions défensives). C'est acceptable uniquement dans un laboratoire isolé comme celui-ci, jamais sur un réseau exposé.</p></div>
+
+<h2 id="plugins">État des plugins</h2>
+<p>CALDERA fonctionne avec des plugins activables. Voici leur état à l'issue de l'installation.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Plugin</th><th scope="col">Fonction</th><th scope="col">Statut</th></tr></thead><tbody><tr><td>sandcat</td><td>Gère les agents (création, compilation, distribution)</td><td>Actif</td></tr><tr><td>stockpile</td><td>Bibliothèque de techniques, d’adversaires et de faits ATT&amp;CK</td><td>Actif</td></tr><tr><td>compass</td><td>Carte visuelle de couverture MITRE ATT&amp;CK</td><td>Actif</td></tr><tr><td>magma</td><td>Interface web (Vue.js)</td><td>Actif après build</td></tr><tr><td>debrief</td><td>Rapport et chronologie après opération</td><td>Actif</td></tr><tr><td>response</td><td>Réponses automatiques côté Blue Team</td><td>Non visible dans le menu, en cours de diagnostic</td></tr><tr><td>gameboard</td><td>Tableau de score Red vs Blue en temps réel</td><td>Indisponible (nécessite Docker)</td></tr><tr><td>builder</td><td>Compilation d’agents personnalisés via Docker</td><td>Erreur d’import : module docker manquant</td></tr></tbody></table></div>
+<p>L'absence de <code>response</code> n'empêche pas la simulation : la défense est démontrée grâce à une opération du groupe <code>blue</code>.</p>
+
+<h2 id="agents">Déploiement des agents</h2>
+<p>Un agent est le programme exécuté sur chaque machine cible : c'est lui qui permet à CALDERA d'exécuter des techniques ATT&amp;CK à distance. J'ai utilisé <strong>Sandcat</strong> (écrit en Go), l'agent par défaut, qui communique en HTTP(S). La commande adaptée à la plateforme et au groupe est générée depuis l'interface (<em>Agents → Deploy an agent</em>).</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Joueur</th><th scope="col">Équipe</th><th scope="col">Rôle</th><th scope="col">Groupe</th><th scope="col">VM hôte</th></tr></thead><tbody><tr><td>Alex</td><td>Rouge</td><td>Opérateur C2</td><td>red</td><td>VM Attaquant</td></tr><tr><td>Sam</td><td>Rouge</td><td>Spécialiste exploitation</td><td>red</td><td>VM Attaquant</td></tr><tr><td>Morgan</td><td>Bleue</td><td>Analyste SIEM</td><td>blue</td><td>VM Défenseur</td></tr><tr><td>Jordan</td><td>Bleue</td><td>Chasseur de menaces (threat hunter)</td><td>blue</td><td>VM Défenseur</td></tr></tbody></table></div>
+<h3>Agent Red Team</h3>
+<pre class="term"><code>server="http://&lt;IP_SERVEUR&gt;:8888"
+curl -s -X POST -H "file:sandcat.go" -H "platform:linux" $server/file/download &gt; splunkd
+chmod +x splunkd
+./splunkd -server $server -group red -v -name Alex</code></pre>
+<h3>Agent Blue Team</h3>
+<pre class="term"><code>server="http://&lt;IP_SERVEUR&gt;:8888"
+agent=$(curl -svkOJ -X POST -H "file:sandcat.go" -H "platform:linux" -H "group:blue" \
+  $server/file/download 2&gt;&amp;1 | grep -oP 'filename="\K[^"]+')
+chmod +x $agent
+./$agent -server $server -group blue -v -name Morgan</code></pre>
+<p>Chaque agent supplémentaire (Sam côté rouge, Jordan côté bleu) se déploie en répétant l'opération dans un autre terminal avec un <code>-name</code> différent.</p>
+
+<h2 id="scenario">Scénario d'attaque retenu</h2>
+<p>CALDERA propose des profils d'adversaires prédéfinis. J'ai choisi un profil qui couvre plusieurs phases de la chaîne d'attaque pour une démonstration complète.</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Profil</th><th scope="col">Comportement simulé</th><th scope="col">Adapté pour</th></tr></thead><tbody><tr><td>Discovery</td><td>Reconnaissance du système (fichiers, utilisateurs, réseau)</td><td>Démo simple, faible risque</td></tr><tr><td>Collection</td><td>Collecte de données sensibles sur la machine cible</td><td>Démo intermédiaire</td></tr><tr><td>Thief</td><td>Vol de fichiers et d’identifiants</td><td>Scénario clair à expliquer</td></tr><tr><td><strong>Advanced Thief</strong></td><td>Vol puis exfiltration via Dropbox, FTP ou GitHub</td><td><strong>Retenu</strong> : couvre plusieurs phases ATT&amp;CK</td></tr><tr><td>Defense Evasion</td><td>Techniques pour échapper à la détection</td><td>Tester la détection de la Blue Team</td></tr><tr><td>Stowaway</td><td>Persistance et mouvement sur le système</td><td>Tester la phase de persistance</td></tr></tbody></table></div>
+<p>Le profil <strong>Advanced Thief</strong> simule le vol et l'exfiltration de données, ce qui touche plusieurs tactiques MITRE ATT&amp;CK (collecte, exfiltration via un service externe). Son scénario est facile à raconter et tient dans une présentation de 5 minutes.</p>
+
+<h2 id="simulation">Exécution de la simulation</h2>
+<h3>Côté Red Team</h3>
+<ol>
+<li><strong>Vérifier les agents</strong> : Alex et Sam doivent apparaître avec un indicateur vert (actif) dans <em>Agents</em>.</li>
+<li><strong>Créer l'opération</strong> : <em>Operations → +</em>, nom <code>Attaque-AdvancedThief</code>, groupe <code>red</code>, adversaire <code>Advanced Thief</code>, planner <code>atomic</code>.</li>
+<li><strong>Lancer</strong> avec <em>Start</em> : les techniques s'enchaînent automatiquement, avec un statut succès ou échec par étape.</li></ol>
+<h3>Côté Blue Team</h3>
+<ol start="4">
+<li><strong>Créer l'opération défensive</strong> : nom <code>Defense-Blue</code>, groupe <code>blue</code>, planner <code>atomic</code>.</li>
+<li><strong>Lancer</strong> en parallèle ou après l'opération rouge pour observer la réaction défensive.</li>
+<li><strong>Consulter le rapport</strong> avec <em>View Report</em> pour lister les actions exécutées côté défense.</li></ol>
+<div class="callout warn"><h3>Limite constatée</h3><p>Le plugin <code>gameboard</code>, qui affiche normalement un tableau de bord Red vs Blue en temps réel, a besoin de Docker, indisponible dans cet environnement. J'ai donc comparé les deux équipes à la main, en confrontant le rapport de l'opération rouge à celui de l'opération bleue.</p></div>
+
+<h2 id="resultats">Méthode d'analyse</h2>
+<p>La comparaison se fait phase par phase du cycle ATT&amp;CK (reconnaissance, accès initial, persistance, mouvement latéral, exfiltration) :</p>
+<ul><li>une technique réussie côté rouge = <strong>+1 point</strong> pour l'équipe rouge ;</li>
+<li>une détection ou un blocage constaté côté bleu (logs, EDR, audit) = <strong>+1 point</strong> pour l'équipe bleue.</li></ul>
+<p>La méthode est manuelle, mais traçable : elle s'appuie sur les rapports d'opération de CALDERA, exportables en JSON via l'API.</p>
+<pre class="term"><code>curl -s -u admin:admin http://localhost:8888/api/v2/operations/&lt;ID&gt;/report &gt; rapport.json</code></pre>
+
+<h2 id="conclusion">Conclusion et axes d'amélioration</h2>
+<p>Le déploiement de CALDERA sur trois VM Debian a permis de mettre en place une simulation Red vs Blue fonctionnelle, malgré plusieurs obstacles à l'installation (version de Go, build de l'interface, conflit de port, environnement virtuel Python). Chacun a été résolu méthodiquement et documenté. Le projet m'a donné une mise en pratique concrète du <em>Purple Teaming</em> et du référentiel MITRE ATT&amp;CK dans un cadre maîtrisé et reproductible.</p>
+<div class="callout"><h3>Pistes d'amélioration</h3><ul>
+<li>Activer Docker pour débloquer <code>gameboard</code> (score en temps réel) et <code>builder</code> (agents personnalisés).</li>
+<li>Finir le diagnostic du plugin <code>response</code> pour obtenir une réponse défensive automatisée au lieu d'une comparaison a posteriori.</li>
+<li>Tester un second profil (par exemple <em>Defense Evasion</em>) pour évaluer la capacité de détection de la Blue Team.</li>
+<li>Ajouter un démarrage automatique (systemd ou screen) pour éviter les conflits de port dus à des instances orphelines.</li></ul></div>
+
+<div class="pn"><span></span><a class="next" href="projet-docker-fondamentaux.html"><small>Suivant →</small>Docker : comprendre les conteneurs</a></div>
+<div class="btn-group"><a class="btn ghost" href="projets.html"><i class='bx bx-left-arrow-alt'></i> Tous les projets</a></div>
+</div>
+</section>
+</main>
+<footer>© 2026 Oussama Denia</footer>
+<script src="site.js"></script>
+</body>
+</html>

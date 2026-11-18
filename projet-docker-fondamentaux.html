@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Fiche de synthèse : fonctionnement du moteur Docker, images, Dockerfile, registres et intérêt des conteneurs.">
+    <title>Docker : comprendre les conteneurs – Oussama Denia</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header">
+    <a href="index.html" class="logo">Oussama Denia</a>
+    <nav class="navbar" id="navbar">
+        <a href="index.html#about">À propos</a>
+        <a href="index.html#skills">Compétences</a>
+        <a href="index.html#experience">Stages</a>
+        <a href="projets.html" class="active">Projets</a>
+        <a href="index.html#veille">Veille</a>
+        <a href="index.html#contact">Contact</a>
+    </nav>
+    <div class="tools">
+        <button id="theme-toggle" aria-label="Changer de thème"><i class='bx bx-moon'></i></button>
+        <button id="menu-icon" aria-label="Ouvrir le menu"><i class='bx bx-menu'></i></button>
+    </div>
+</header>
+<main>
+<section class="page">
+<nav class="crumbs" aria-label="Fil d'Ariane"><a href="index.html">Accueil</a><span aria-hidden="true">/</span><a href="projets.html">Projets</a><span aria-hidden="true">/</span><span>Docker : comprendre les conteneurs</span></nav>
+<div class="doc">
+<div class="meta-row"><span>Stage Novatiel</span><span>Notes du 05/06/2026</span></div>
+<h1>Docker : comprendre les conteneurs</h1>
+<p class="lead">Ce que j'ai appris sur Docker en début de stage chez Novatiel : les notions à connaître avant de manipuler des conteneurs.</p>
+<div class="tags"><span>Docker</span><span>Conteneurs</span><span>DevOps</span></div>
+<nav class="toc" aria-label="Sommaire"><a href="#definition">Définition</a><a href="#fonctionnement">Fonctionnement</a><a href="#pourquoi">Pourquoi</a><a href="#creer">Créer un conteneur</a><a href="#commandes">Commandes</a></nav>
+
+<h2 id="definition">Docker, c'est quoi ?</h2>
+<p>Docker permet de <strong>créer, tester et exécuter des applications facilement</strong>. Il regroupe le code, les outils et les paramètres dans une unité standardisée : le <strong>conteneur</strong>. Un conteneur est léger, portable et ne dépend pas de l'ordinateur sur lequel il tourne.</p>
+
+<h2 id="fonctionnement">Comment ça marche ?</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Élément</th><th scope="col">Rôle</th></tr></thead><tbody><tr><td>Docker Engine</td><td>Crée et gère les conteneurs. Il se compose du daemon, de l’API et de la CLI (voir ci-dessous).</td></tr><tr><td>Daemon (serveur)</td><td>Programme qui s’exécute en arrière-plan et gère toutes les tâches liées à Docker : création, exécution et distribution des conteneurs.</td></tr><tr><td>API Docker</td><td>Ensemble de règles qui permet aux programmes de communiquer avec le daemon et de lui donner des instructions.</td></tr><tr><td>CLI</td><td>Interface en ligne de commande pour envoyer des ordres au daemon.</td></tr><tr><td>Image Docker</td><td>Modèle à partir duquel on crée des conteneurs : il contient le code de l’application et ses dépendances.</td></tr><tr><td>Dockerfile</td><td>Script d’instructions qui décrit comment construire une image.</td></tr><tr><td>Docker Hub</td><td>Répertoire dans le cloud pour trouver et partager des images.</td></tr><tr><td>Registry</td><td>Système de stockage et de distribution des images Docker.</td></tr></tbody></table></div>
+<div class="flow" aria-label="Fonctionnement"><span>Client (CLI)</span><i>→ commandes →</i><span>Daemon</span><i>→ images →</i><span>Conteneurs</span><i>→</i><span>Applications</span></div>
+<p>Docker s'appuie aussi sur des fonctionnalités du noyau Linux, comme les <strong>namespaces</strong>, pour isoler les conteneurs les uns des autres et limiter leur accès aux ressources du système. Cette isolation garantit la sécurité et permet à plusieurs conteneurs de tourner sur la même machine sans interférer.</p>
+
+<h2 id="pourquoi">Pourquoi utiliser Docker ?</h2>
+<ul>
+<li>Tout est <strong>plus simple, plus rapide et plus fiable</strong> : une application et toutes ses dépendances tiennent dans un seul conteneur.</li>
+<li>Les conteneurs sont légers : on les lance, on les fait évoluer et on les arrête en quelques secondes.</li>
+<li>Cas d'usage : simplifier les environnements de développement, mettre en place une <strong>architecture microservices</strong> (application découpée en petits services indépendants pour gagner en évolutivité, en flexibilité et en tolérance aux pannes), l'intégration et le déploiement continus, les applications cloud native et les pratiques DevOps.</li></ul>
+
+<h2 id="creer">Créer un conteneur</h2>
+<h3>1. Obtenir une image</h3>
+<p>Docker Hub propose de nombreuses images de base prêtes à l'emploi. Pendant le stage, je me suis connecté à un VPS avec un client SSH (PuTTY) pour les manipuler.</p>
+<pre class="term"><code>sudo docker images          # voir toutes les images du système
+docker pull &lt;nom_ou_id&gt;      # télécharger une image</code></pre>
+<p>Pour fabriquer sa propre image, on peut passer par un <strong>Dockerfile</strong> (fichier texte qui indique à Docker comment la construire) ou par <strong>Easypanel</strong>, un outil qui simplifie la création d'images pour des applications Node.js, Ruby, Python, PHP, Go ou Java.</p>
+<h3>2. Écrire le Dockerfile, puis créer le conteneur</h3>
+<p>La mise en pratique complète (Dockerfile, build, run) est détaillée dans le projet <a class="inline" href="projet-docker-site.html">Héberger un site dans un conteneur Nginx</a>.</p>
+
+<h2 id="commandes">Commandes de gestion vues en stage</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Commande</th><th scope="col">Usage</th></tr></thead><tbody><tr><td><code>docker build</code></td><td>Construire une image à partir d’un Dockerfile</td></tr><tr><td><code>docker run</code></td><td>Créer et exécuter un conteneur à partir d’une image</td></tr><tr><td><code>docker run -p</code></td><td>Mapper les ports entre l’hôte et le conteneur pour joindre l’extérieur (serveur web, base de données...)</td></tr><tr><td><code>sudo docker ps -a</code></td><td>Lister les conteneurs</td></tr><tr><td><code>docker top MyContainer</code></td><td>Voir les processus en cours dans un conteneur</td></tr><tr><td><code>docker stats</code></td><td>Suivre la consommation (mémoire, etc.) des conteneurs</td></tr><tr><td><code>docker stop MyContainer</code></td><td>Arrêter proprement un conteneur</td></tr><tr><td><code>docker kill MyContainer</code></td><td>Forcer l’arrêt d’un conteneur</td></tr></tbody></table></div>
+<div class="callout"><h3>Pour aller plus loin</h3>
+<p>Ces notes accompagnaient la vidéo suivie pendant le stage : <a class="inline" href="https://youtu.be/J27puPcFFQo?si=9Y_ykHOmT5PQPCIf" target="_blank" rel="noopener">Docker, c'est quoi ?</a> (YouTube). Suite logique : <a class="inline" href="projet-docker-commandes.html">prise en main des commandes</a>, puis <a class="inline" href="projet-kubernetes-concepts.html">Kubernetes</a> pour orchestrer des conteneurs à plus grande échelle.</p></div>
+
+<div class="pn"><a class="prev" href="projet-caldera.html"><small>← Précédent</small>Simulation Red Team vs Blue Team avec CALDERA</a><a class="next" href="projet-docker-commandes.html"><small>Suivant →</small>Docker : prise en main des commandes</a></div>
+<div class="btn-group"><a class="btn ghost" href="projets.html"><i class='bx bx-left-arrow-alt'></i> Tous les projets</a></div>
+</div>
+</section>
+</main>
+<footer>© 2026 Oussama Denia</footer>
+<script src="site.js"></script>
+</body>
+</html>

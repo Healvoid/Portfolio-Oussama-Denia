@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Séances pratiques du 08 et 10 juin : cycle de vie des images et conteneurs, avec captures de terminal et erreurs corrigées.">
+    <title>Docker : prise en main des commandes – Oussama Denia</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header">
+    <a href="index.html" class="logo">Oussama Denia</a>
+    <nav class="navbar" id="navbar">
+        <a href="index.html#about">À propos</a>
+        <a href="index.html#skills">Compétences</a>
+        <a href="index.html#experience">Stages</a>
+        <a href="projets.html" class="active">Projets</a>
+        <a href="index.html#veille">Veille</a>
+        <a href="index.html#contact">Contact</a>
+    </nav>
+    <div class="tools">
+        <button id="theme-toggle" aria-label="Changer de thème"><i class='bx bx-moon'></i></button>
+        <button id="menu-icon" aria-label="Ouvrir le menu"><i class='bx bx-menu'></i></button>
+    </div>
+</header>
+<main>
+<section class="page">
+<nav class="crumbs" aria-label="Fil d'Ariane"><a href="index.html">Accueil</a><span aria-hidden="true">/</span><a href="projets.html">Projets</a><span aria-hidden="true">/</span><span>Docker : prise en main des commandes</span></nav>
+<div class="doc">
+<div class="meta-row"><span>Stage Novatiel</span><span>Rapports du 08/06 et du 10/06/2026</span></div>
+<h1>Docker : prise en main des commandes</h1>
+<p class="lead">Mes premières manipulations de Docker en ligne de commande : ce qui marche, ce qui échoue, et pourquoi.</p>
+<div class="tags"><span>Docker</span><span>Nginx</span><span>Ubuntu WSL 2</span><span>CLI</span></div>
+<nav class="toc" aria-label="Sommaire"><a href="#objectif">Objectif</a><a href="#test">08/06 : commandes</a><a href="#pratique">10/06 : Nginx</a><a href="#suite">Suite</a></nav>
+
+<h2 id="objectif">Objectif</h2>
+<p>Après la théorie, j'ai manipulé Docker dans un terminal Ubuntu sous WSL 2 pour me familiariser avec le cycle de vie d'un conteneur : télécharger une image, la lancer, l'inspecter, l'arrêter et la supprimer. Les captures ci-dessous sont mes vraies sessions de travail, <strong>erreurs comprises</strong> : c'est en les corrigeant qu'on retient les commandes.</p>
+
+<h2 id="test">Séance du 08/06 : tester les commandes essentielles</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Commande</th><th scope="col">Ce qu’elle fait</th></tr></thead><tbody><tr><td><code>docker ps</code></td><td>Liste les conteneurs en cours d’exécution : le tableau de bord principal</td></tr><tr><td><code>docker ps -a</code></td><td>Liste tous les conteneurs (actifs, arrêtés, plantés). Utile pour retrouver l’ID d’un ancien conteneur</td></tr><tr><td><code>docker images</code> / <code>docker image ls</code></td><td>Liste les images locales et l’espace disque qu’elles occupent</td></tr><tr><td><code>docker run &lt;image&gt;</code></td><td>Crée un conteneur à partir d’une image et le démarre immédiatement</td></tr><tr><td><code>docker start &lt;nom_ou_ID&gt;</code></td><td>Relance un conteneur existant et arrêté, sans en créer un nouveau</td></tr><tr><td><code>docker stop &lt;nom_ou_ID&gt;</code></td><td>Demande un arrêt propre : le conteneur termine ses tâches en cours</td></tr><tr><td><code>docker kill &lt;nom_ou_ID&gt;</code></td><td>Arrêt brutal, à réserver aux conteneurs figés</td></tr><tr><td><code>docker logs &lt;nom_ou_ID&gt;</code></td><td>Affiche ce que le programme a écrit dans la console : un des premiers réflexes de dépannage</td></tr><tr><td><code>docker exec -it &lt;nom_ou_ID&gt; bash</code></td><td>Ouvre un terminal dans le conteneur en marche (<code>exit</code> pour sortir)</td></tr><tr><td><code>docker inspect &lt;nom_ou_ID&gt;</code></td><td>Métadonnées techniques, par exemple l’adresse IP interne du conteneur</td></tr><tr><td><code>docker rm</code> / <code>docker rmi</code></td><td>Supprime un conteneur arrêté / une image</td></tr><tr><td><code>docker system prune</code></td><td>Nettoie ce qui ne sert plus (conteneurs arrêtés, réseaux inutilisés...)</td></tr><tr><td><code>docker network ls</code></td><td>Liste les réseaux Docker</td></tr></tbody></table></div>
+<figure class="shot"><button type="button" aria-label="Agrandir la capture : Terminal : docker run hello-world, avec une erreur puis le message de succès"><img src="assets/img/docker-test-000.png" alt="Terminal : docker run hello-world, avec une erreur puis le message de succès" loading="lazy"></button><figcaption>Premier <code>docker run</code> : <code>hello world</code> (avec un espace) échoue, <code>hello-world</code> télécharge l'image et affiche « Hello from Docker! », preuve que l'installation fonctionne.</figcaption></figure>
+<figure class="shot"><button type="button" aria-label="Agrandir la capture : Terminal : docker image ls, docker ps -a, docker rm et docker rmi"><img src="assets/img/docker-test-001.png" alt="Terminal : docker image ls, docker ps -a, docker rm et docker rmi" loading="lazy"></button><figcaption>Nettoyage : <code>docker ps -a</code> pour retrouver le conteneur <code>peaceful_mayer</code>, <code>docker rm</code> pour le supprimer, puis <code>docker rmi hello-world</code> pour supprimer l'image.</figcaption></figure>
+<div class="callout"><h3>Ce que ces erreurs m'ont appris</h3><ul>
+<li><code>docker run hello world</code> : le nom d'image est <code>hello-world</code>. Docker a cherché une image <code>hello</code> et a refusé l'accès au dépôt.</li>
+<li><code>docker rm 0e</code> a échoué car <code>0e</code> est l'ID d'une <strong>image</strong>, pas d'un conteneur : <code>rm</code> supprime les conteneurs, <code>rmi</code> supprime les images.</li>
+<li><code>docker stop hello-world</code> a échoué : on désigne un conteneur par son nom ou son ID (ici <code>peaceful_mayer</code>), pas par le nom de l'image.</li></ul></div>
+
+<h2 id="pratique">Séance du 10/06 : images, Nginx et gestion des conteneurs</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Commande</th><th scope="col">Ce qu’elle fait</th></tr></thead><tbody><tr><td><code>docker pull nginx</code></td><td>Télécharge la dernière version de l’image Nginx depuis Docker Hub</td></tr><tr><td><code>docker pull nginx:1.21.0</code></td><td>Récupère une version précise grâce à son tag</td></tr><tr><td><code>docker build -t mon_app .</code></td><td>Construit une image nommée <code>mon_app</code> à partir du Dockerfile du dossier courant</td></tr><tr><td><code>docker tag</code> / <code>docker push</code></td><td>Lie une image à un compte puis la publie sur un registre comme Docker Hub</td></tr><tr><td><code>docker run -d nginx</code></td><td>Lance Nginx en arrière-plan (mode détaché)</td></tr><tr><td><code>docker run -d --name mon_nginx nginx</code></td><td>Idem, avec un nom pour le retrouver facilement</td></tr><tr><td><code>docker exec -it mon_nginx /bin/bash</code></td><td>Terminal interactif dans le conteneur</td></tr><tr><td><code>docker restart mon_nginx</code></td><td>Redémarre un conteneur sans le recréer</td></tr><tr><td><code>docker rm $(docker ps -a -q)</code></td><td>Supprime en une fois tous les conteneurs arrêtés</td></tr></tbody></table></div>
+<figure class="shot"><button type="button" aria-label="Agrandir la capture : Terminal : docker pull nginx puis docker pull nginx:1.21.0"><img src="assets/img/docker-pratique-000.png" alt="Terminal : docker pull nginx puis docker pull nginx:1.21.0" loading="lazy"></button><figcaption>Téléchargement de l'image Nginx en version <code>latest</code> puis en version précise <code>1.21.0</code> : Docker récupère l'image couche par couche (<code>Pull complete</code>).</figcaption></figure>
+<figure class="shot"><button type="button" aria-label="Agrandir la capture : Terminal : docker build en erreur, docker images, tag, push et docker run nginx"><img src="assets/img/docker-pratique-001.png" alt="Terminal : docker build en erreur, docker images, tag, push et docker run nginx" loading="lazy"></button><figcaption><code>docker images</code> montre les deux versions de Nginx (200 Mo et 241 Mo d'espace disque). Les commandes <code>build</code>, <code>rmi</code>, <code>tag</code> et <code>push</code> sur <code>mon_app</code> échouent faute d'image locale ; <code>docker run nginx</code> démarre bien un serveur.</figcaption></figure>
+<figure class="shot"><button type="button" aria-label="Agrandir la capture : Terminal : docker stop, rm, rm $(docker ps -a -q) et restart"><img src="assets/img/docker-pratique-002.png" alt="Terminal : docker stop, rm, rm $(docker ps -a -q) et restart" loading="lazy"></button><figcaption>Arrêt puis suppression de <code>mon_nginx</code>. La suppression globale refuse d'effacer un conteneur encore actif, et <code>restart</code> échoue car <code>mon_nginx</code> n'existe plus.</figcaption></figure>
+<div class="callout"><h3>Erreurs rencontrées</h3><ul>
+<li><strong>Build impossible</strong> : <em>failed to read dockerfile: no such file or directory</em>. Il n'y avait pas de <code>Dockerfile</code> dans le dossier courant. Sans Dockerfile, pas d'image <code>mon_app</code>, donc <code>rmi</code>, <code>tag</code> et <code>push</code> échouent à leur tour.</li>
+<li><strong>Suppression refusée</strong> : <em>container is running: stop the container before removing</em>. Il faut arrêter un conteneur avant de le supprimer (ou forcer).</li>
+<li><strong>Redémarrage impossible</strong> : <em>No such container</em>, car j'avais déjà supprimé <code>mon_nginx</code> juste avant.</li></ul></div>
+
+<h2 id="suite">Et ensuite ?</h2>
+<p>La séance du 11/06 met tout cela en application avec un vrai site : <a class="inline" href="projet-docker-site.html">héberger un site dans un conteneur Nginx</a>.</p>
+
+<div class="pn"><a class="prev" href="projet-docker-fondamentaux.html"><small>← Précédent</small>Docker : comprendre les conteneurs</a><a class="next" href="projet-docker-site.html"><small>Suivant →</small>Héberger un site dans un conteneur Nginx</a></div>
+<div class="btn-group"><a class="btn ghost" href="projets.html"><i class='bx bx-left-arrow-alt'></i> Tous les projets</a></div>
+</div>
+</section>
+</main>
+<footer>© 2026 Oussama Denia</footer>
+<script src="site.js"></script>
+</body>
+</html>

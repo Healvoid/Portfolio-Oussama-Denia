@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Installation de kubectl et Minikube, démarrage d&#x27;un cluster local et prise en main des commandes kubectl.">
+    <title>Kubernetes avec Minikube – Oussama Denia</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header">
+    <a href="index.html" class="logo">Oussama Denia</a>
+    <nav class="navbar" id="navbar">
+        <a href="index.html#about">À propos</a>
+        <a href="index.html#skills">Compétences</a>
+        <a href="index.html#experience">Stages</a>
+        <a href="projets.html" class="active">Projets</a>
+        <a href="index.html#veille">Veille</a>
+        <a href="index.html#contact">Contact</a>
+    </nav>
+    <div class="tools">
+        <button id="theme-toggle" aria-label="Changer de thème"><i class='bx bx-moon'></i></button>
+        <button id="menu-icon" aria-label="Ouvrir le menu"><i class='bx bx-menu'></i></button>
+    </div>
+</header>
+<main>
+<section class="page">
+<nav class="crumbs" aria-label="Fil d'Ariane"><a href="index.html">Accueil</a><span aria-hidden="true">/</span><a href="projets.html">Projets</a><span aria-hidden="true">/</span><span>Kubernetes avec Minikube</span></nav>
+<div class="doc">
+<div class="meta-row"><span>Stage Novatiel</span><span>Rapport du 16/06/2026</span></div>
+<h1>Kubernetes avec Minikube</h1>
+<p class="lead">Mon premier cluster Kubernetes local : de l'installation des outils au démarrage de Minikube.</p>
+<div class="tags"><span>Kubernetes</span><span>Minikube</span><span>kubectl</span><span>Ubuntu 24.04</span></div>
+<nav class="toc" aria-label="Sommaire"><a href="#objectif">Objectif</a><a href="#install">Installation</a><a href="#demarrage">Démarrage</a><a href="#commandes">Commandes</a><a href="#bilan">Bilan</a></nav>
+
+<h2 id="objectif">Objectif</h2>
+<p>Installer un cluster Kubernetes local avec <strong>Minikube</strong> et manipuler les commandes <code>kubectl</code> de base pour déployer, exposer, mettre à l'échelle et mettre à jour une application.</p>
+<div class="tags"><span>Minikube v1.38.1</span><span>kubectl v1.35.5</span><span>Kubernetes v1.35.1</span><span>Ubuntu 24.04</span><span>driver Docker</span></div>
+
+<h2 id="install">Installation</h2>
+<p>Première commande, premier obstacle : <code>kubectl</code> n'est pas installé. Je l'ai installé avec snap, puis j'ai constaté que <code>minikube</code> manquait aussi (le paquet Debian suggéré par le système, <code>minitube</code>, n'a rien à voir). J'ai donc téléchargé le binaire officiel de Minikube et l'ai installé dans <code>/usr/local/bin</code>.</p>
+<pre class="term"><code>sudo snap install kubectl --classic
+kubectl version --client
+
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/local/bin/minikube
+rm minikube-linux-amd64</code></pre>
+<figure class="shot"><button type="button" aria-label="Agrandir la capture : Terminal : kubectl introuvable, installation par snap, téléchargement de minikube et premier minikube start"><img src="assets/img/k8s-000.png" alt="Terminal : kubectl introuvable, installation par snap, téléchargement de minikube et premier minikube start" loading="lazy"></button><figcaption>De haut en bas : <code>kubectl</code> introuvable, installation de la version 1.35.5 par snap, <code>minikube</code> introuvable, téléchargement du binaire (128 Mo) puis installation et premier <code>minikube start</code>.</figcaption></figure>
+
+<h2 id="demarrage">Démarrage du cluster</h2>
+<p><code>minikube start</code> a sélectionné automatiquement le driver Docker, téléchargé l'image de base et les composants Kubernetes, puis créé un conteneur de 2 CPU et 3 Go de mémoire qui héberge le cluster.</p>
+<figure class="shot"><button type="button" aria-label="Agrandir la capture : Terminal : minikube start, création du cluster et message Done"><img src="assets/img/k8s-001.png" alt="Terminal : minikube start, création du cluster et message Done" loading="lazy"></button><figcaption>Le cluster est prêt : <em>Done! kubectl is now configured to use "minikube" cluster and "default" namespace by default</em>. Les add-ons <code>storage-provisioner</code> et <code>default-storageclass</code> sont activés.</figcaption></figure>
+
+<h2 id="commandes">Commandes étudiées</h2>
+<p>Voici les commandes de base que j'ai travaillées, dans l'ordre d'un déploiement :</p>
+<div class="table-wrap"><table><thead><tr><th scope="col">Commande</th><th scope="col">Ce qu’elle fait</th></tr></thead><tbody><tr><td><code>minikube start</code></td><td>Démarre le cluster Kubernetes local</td></tr><tr><td><code>kubectl cluster-info</code></td><td>Affiche les adresses du plan de contrôle pour confirmer que le cluster est joignable</td></tr><tr><td><code>kubectl create deployment mon-app-web --image=nginx:1.23</code></td><td>Demande au cluster de télécharger une image et de la lancer dans un pod</td></tr><tr><td><code>kubectl expose deployment</code></td><td>Crée un service réseau pour ouvrir un port et rendre l’application accessible</td></tr><tr><td><code>kubectl port-forward</code></td><td>Crée un tunnel temporaire entre un port de ma machine et celui de l’application</td></tr><tr><td><code>kubectl get pods</code></td><td>Liste les pods et leur statut en temps réel (création, prêt, erreur)</td></tr><tr><td><code>kubectl scale deployment</code></td><td>Change le nombre de répliques de l’application pour s’adapter à la charge</td></tr><tr><td><code>kubectl set image</code></td><td>Déclenche une mise à jour en remplaçant l’image par une nouvelle version</td></tr><tr><td><code>kubectl rollout status</code></td><td>Suit le déroulement de la mise à jour des pods</td></tr><tr><td><code>kubectl exec</code></td><td>Ouvre un terminal dans un pod</td></tr><tr><td><code>kubectl logs</code></td><td>Affiche les messages et erreurs de l’application pour déboguer</td></tr><tr><td><code>kubectl delete</code></td><td>Supprime proprement une ressource (déploiement, service...)</td></tr></tbody></table></div>
+<pre class="term"><code><span class="c"># Exemple de déploiement d'un serveur Nginx</span>
+kubectl create deployment mon-app-web --image=nginx:1.23
+kubectl expose deployment mon-app-web --type=NodePort --port=80
+kubectl get pods
+kubectl scale deployment mon-app-web --replicas=3</code></pre>
+<p class="note"><small>Cet exemple illustre l'enchaînement des commandes ; les captures ci-dessus montrent l'installation et le démarrage du cluster.</small></p>
+
+<h2 id="bilan">Ce que j'en retiens</h2>
+<ul>
+<li>Un cluster local complet démarre avec une seule commande (<code>minikube start</code>), sur le driver Docker.</li>
+<li>Kubernetes s'utilise de façon <strong>déclarative</strong> : on décrit l'état voulu (image, nombre de répliques), le cluster fait le nécessaire pour l'atteindre.</li>
+<li>Mise à l'échelle et mise à jour d'une application se font à la volée, sans arrêter le service.</li></ul>
+<p>Les notions théoriques sont dans <a class="inline" href="projet-kubernetes-concepts.html">Kubernetes : les concepts clés</a>.</p>
+
+<div class="pn"><a class="prev" href="projet-kubernetes-concepts.html"><small>← Précédent</small>Kubernetes : les concepts clés</a></div>
+<div class="btn-group"><a class="btn ghost" href="projets.html"><i class='bx bx-left-arrow-alt'></i> Tous les projets</a></div>
+</div>
+</section>
+</main>
+<footer>© 2026 Oussama Denia</footer>
+<script src="site.js"></script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Fiche de synthèse : orchestration, services, volumes, déploiements et composants du plan de contrôle.">
+    <title>Kubernetes : les concepts clés – Oussama Denia</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header">
+    <a href="index.html" class="logo">Oussama Denia</a>
+    <nav class="navbar" id="navbar">
+        <a href="index.html#about">À propos</a>
+        <a href="index.html#skills">Compétences</a>
+        <a href="index.html#experience">Stages</a>
+        <a href="projets.html" class="active">Projets</a>
+        <a href="index.html#veille">Veille</a>
+        <a href="index.html#contact">Contact</a>
+    </nav>
+    <div class="tools">
+        <button id="theme-toggle" aria-label="Changer de thème"><i class='bx bx-moon'></i></button>
+        <button id="menu-icon" aria-label="Ouvrir le menu"><i class='bx bx-menu'></i></button>
+    </div>
+</header>
+<main>
+<section class="page">
+<nav class="crumbs" aria-label="Fil d'Ariane"><a href="index.html">Accueil</a><span aria-hidden="true">/</span><a href="projets.html">Projets</a><span aria-hidden="true">/</span><span>Kubernetes : les concepts clés</span></nav>
+<div class="doc">
+<div class="meta-row"><span>Stage Novatiel</span><span>Notes du 05/06/2026</span></div>
+<h1>Kubernetes : les concepts clés</h1>
+<p class="lead">Comprendre pourquoi et comment Kubernetes orchestre les conteneurs, avant de le manipuler.</p>
+<div class="tags"><span>Kubernetes</span><span>Orchestration</span><span>YAML</span></div>
+<nav class="toc" aria-label="Sommaire"><a href="#definition">Définition</a><a href="#objets">Objets</a><a href="#workflow">Du code au cluster</a><a href="#composants">Composants</a></nav>
+
+<h2 id="definition">Qu'est-ce que Kubernetes ?</h2>
+<p>Kubernetes (K8s) est un <strong>orchestrateur de conteneurs</strong> : il répartit les conteneurs sur plusieurs serveurs, les coordonne et les fait fonctionner ensemble pour que l'application ne tombe jamais en panne.</p>
+<div class="callout"><h3>À quoi ça sert</h3><ul>
+<li>Créer des services applicatifs répartis sur plusieurs conteneurs.</li>
+<li>Planifier leur exécution dans un cluster.</li>
+<li>Garantir leur intégrité.</li>
+<li>Assurer le monitoring.</li></ul></div>
+<p><strong>Haute disponibilité</strong> : Kubernetes maintient les conteneurs en ligne et lance plusieurs instances selon des paramètres (manuels ou automatiques). Il détecte aussi les pannes et recrée automatiquement les conteneurs défaillants.</p>
+
+<h2 id="objets">Les objets à connaître</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Objet</th><th scope="col">Rôle</th></tr></thead><tbody><tr><td>Service</td><td>IP et port <strong>fixes</strong> devant les pods : on évite de communiquer directement par IP. Chaîne : Service → IP/port → pods.</td></tr><tr><td>Volume</td><td>Stockage persistant : les données survivent à l’arrêt ou à la suppression d’un conteneur.</td></tr><tr><td>Déploiement (Deployment)</td><td>Objet de gestion des déploiements : création, suppression, mise à l’échelle (<em>scaling</em>) et paramètres de montée ou de réduction de charge.</td></tr></tbody></table></div>
+
+<h2 id="workflow">Du code au cluster</h2>
+<p>Ordre d'utilisation typique avec Docker :</p>
+<div class="flow"><span>1. Docker build <small>(créer l'image)</small></span><i>→</i><span>2. Push <small>(stocker dans un registry)</small></span><i>→</i><span>3. kubectl apply <small>(déployer)</small></span><i>→</i><span>4. K8s gère <small>(auto-scale, auto-réparation)</small></span></div>
+<p><code>kubectl apply</code> sert à déployer et à gérer les ressources décrites dans un fichier.</p>
+<h3>Prérequis</h3>
+<ul><li>Les conteneurs (Docker).</li><li>Le format <strong>YAML</strong>, format de configuration standard pour Docker Compose, Kubernetes ou les pipelines CI/CD, conçu pour être lisible par un humain.</li><li>Des bases de réseau (DNS, proxy).</li><li>Les API REST.</li></ul>
+
+<h2 id="composants">Composants du plan de contrôle</h2>
+<div class="table-wrap"><table><thead><tr><th scope="col">Composant</th><th scope="col">Rôle</th></tr></thead><tbody><tr><td>kube-apiserver</td><td>Point d’entrée unique du cluster. Valide et traite toutes les requêtes (authentification, autorisation, validation).</td></tr><tr><td>kube-scheduler</td><td>Le « planificateur » : assigne les pods aux nœuds selon les ressources disponibles, les contraintes et les affinités.</td></tr><tr><td>etcd</td><td>Stockage clé-valeur distribué, source de vérité du cluster : si ce n’est pas dans etcd, ça n’existe pas dans Kubernetes.</td></tr><tr><td>kube-controller-manager</td><td>Boucles de contrôle qui maintiennent l’état désiré (Node Controller, Replication Controller, EndpointSlice Controller).</td></tr></tbody></table></div>
+<div class="callout"><p>Dans les exemples vus en stage, <strong>Nginx</strong> sert de serveur web de démonstration à déployer dans les pods.</p>
+<p>Ressource suivie : <a class="inline" href="https://youtu.be/NChhdOZV4sY?si=2E5W3rEOdb0cmNwe" target="_blank" rel="noopener">vidéo d'introduction à Kubernetes</a> (YouTube). La mise en pratique est dans <a class="inline" href="projet-kubernetes-minikube.html">Kubernetes avec Minikube</a>.</p></div>
+
+<div class="pn"><a class="prev" href="projet-docker-site.html"><small>← Précédent</small>Héberger un site dans un conteneur Nginx</a><a class="next" href="projet-kubernetes-minikube.html"><small>Suivant →</small>Kubernetes avec Minikube</a></div>
+<div class="btn-group"><a class="btn ghost" href="projets.html"><i class='bx bx-left-arrow-alt'></i> Tous les projets</a></div>
+</div>
+</section>
+</main>
+<footer>© 2026 Oussama Denia</footer>
+<script src="site.js"></script>
+</body>
+</html>

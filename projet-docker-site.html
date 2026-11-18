@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Création d&#x27;un Dockerfile, construction d&#x27;une image personnalisée et publication d&#x27;une page web sur localhost.">
+    <title>Héberger un site dans un conteneur Nginx – Oussama Denia</title>
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="header">
+    <a href="index.html" class="logo">Oussama Denia</a>
+    <nav class="navbar" id="navbar">
+        <a href="index.html#about">À propos</a>
+        <a href="index.html#skills">Compétences</a>
+        <a href="index.html#experience">Stages</a>
+        <a href="projets.html" class="active">Projets</a>
+        <a href="index.html#veille">Veille</a>
+        <a href="index.html#contact">Contact</a>
+    </nav>
+    <div class="tools">
+        <button id="theme-toggle" aria-label="Changer de thème"><i class='bx bx-moon'></i></button>
+        <button id="menu-icon" aria-label="Ouvrir le menu"><i class='bx bx-menu'></i></button>
+    </div>
+</header>
+<main>
+<section class="page">
+<nav class="crumbs" aria-label="Fil d'Ariane"><a href="index.html">Accueil</a><span aria-hidden="true">/</span><a href="projets.html">Projets</a><span aria-hidden="true">/</span><span>Héberger un site dans un conteneur Nginx</span></nav>
+<div class="doc">
+<div class="meta-row"><span>Stage Novatiel</span><span>Rapport du 11/06/2026</span></div>
+<h1>Héberger un site dans un conteneur Nginx</h1>
+<p class="lead">De la page HTML au conteneur : j'ai construit ma propre image Docker et je l'ai servie en local.</p>
+<div class="tags"><span>Docker</span><span>Dockerfile</span><span>Nginx</span><span>WSL 2</span></div>
+<nav class="toc" aria-label="Sommaire"><a href="#objectif">Objectif</a><a href="#premier">Serveur Nginx</a><a href="#page">Page web</a><a href="#dockerfile">Dockerfile</a><a href="#resultat">Résultat</a><a href="#diagnostic">Diagnostic</a><a href="#nettoyage">Nettoyage</a><a href="#bilan">Bilan</a></nav>
+
+<h2 id="objectif">Objectif</h2>
+<p>Mettre en pratique ce qui précède sur un cas concret : lancer un serveur web Nginx dans un conteneur, puis <strong>construire ma propre image</strong> contenant une page personnalisée, et la servir sur un port de ma machine.</p>
+<div class="tags"><span>Docker 29.5.2</span><span>Ubuntu (WSL 2)</span><span>nginx:alpine</span></div>
+
+<h2 id="premier">1. Premier serveur Nginx</h2>
+<p>La première tentative échoue : <em>« The command 'docker' could not be found in this WSL 2 distro »</em>. Docker n'était pas encore accessible depuis la distribution WSL 2, il faut activer l'intégration WSL dans Docker Desktop. Une fois fait, <code>docker --version</code> confirme l'installation et le conteneur démarre.</p>
+<pre class="term"><code>docker --version
+docker run -d -p 8080:80 --name mon-premier-serveur nginx
+docker ps</code></pre>
+<p>L'option <code>-p 8080:80</code> relie le port 8080 de ma machine au port 80 du conteneur, où écoute Nginx.</p>
+<figure class="shot"><button type="button" aria-label="Agrandir la capture : Terminal : docker run nginx sur le port 8080, docker ps, création du dossier mon-projet-docker"><img src="assets/img/docker-site-000.png" alt="Terminal : docker run nginx sur le port 8080, docker ps, création du dossier mon-projet-docker" loading="lazy"></button><figcaption>Le conteneur <code>mon-premier-serveur</code> tourne (<code>Up 8 seconds</code>) et expose <code>0.0.0.0:8080-&gt;80/tcp</code>.</figcaption></figure>
+
+<h2 id="page">2. Créer la page web</h2>
+<p>Dans un nouveau dossier <code>mon-projet-docker</code>, j'ai créé un fichier <code>index.html</code>. Premier piège : avec des guillemets doubles, le <code>!</code> déclenche l'expansion d'historique de bash (<em>event not found</em>). Avec des guillemets simples, le fichier est bien créé.</p>
+<pre class="term"><code>mkdir mon-projet-docker
+cd mon-projet-docker
+echo '&lt;h1&gt;Bonjour, ceci est mon super site dans Docker !&lt;/h1&gt;' &gt; index.html</code></pre>
+
+<h2 id="dockerfile">3. Dockerfile et construction de l'image</h2>
+<p>Le Dockerfile tient en deux lignes : partir de l'image légère <code>nginx:alpine</code> et copier ma page dans le dossier servi par Nginx.</p>
+<pre class="term"><code>FROM nginx:alpine
+COPY index.html /usr/share/nginx/html/</code></pre>
+<pre class="term"><code>docker build -t mon-site-perso .
+docker run -d -p 8081:80 --name conteneur-site-perso mon-site-perso</code></pre>
+<figure class="shot"><button type="button" aria-label="Agrandir la capture : Terminal : création du Dockerfile et docker build -t mon-site-perso"><img src="assets/img/docker-site-001.png" alt="Terminal : création du Dockerfile et docker build -t mon-site-perso" loading="lazy"></button><figcaption>Construction de l'image <code>mon-site-perso</code> : Docker récupère <code>nginx:alpine</code>, transfère le contexte puis extrait chaque couche. Le build se termine en 4,5 s.</figcaption></figure>
+<figure class="shot"><button type="button" aria-label="Agrandir la capture : Terminal : docker run -d -p 8081:80"><img src="assets/img/docker-site-002.png" alt="Terminal : docker run -d -p 8081:80" loading="lazy"></button><figcaption>Lancement du conteneur <code>conteneur-site-perso</code> sur le port 8081.</figcaption></figure>
+
+<h2 id="resultat">4. Résultat dans le navigateur</h2>
+<figure class="shot"><button type="button" aria-label="Agrandir la capture : Navigateur sur localhost:8081 affichant « Bonjour, ceci est mon super site dans Docker ! »"><img src="assets/img/docker-site-003.png" alt="Navigateur sur localhost:8081 affichant « Bonjour, ceci est mon super site dans Docker ! »" loading="lazy"></button><figcaption>Sur <code>localhost:8081</code>, la page apparaît : mon site est servi depuis un conteneur Docker.</figcaption></figure>
+
+<h2 id="diagnostic">5. Observer et diagnostiquer</h2>
+<p><code>docker logs</code> affiche ce qu'a écrit Nginx au démarrage (version 1.31.1, plusieurs processus <em>worker</em>). <code>docker exec -it</code> ouvre un terminal dans le conteneur pour vérifier que ma page est bien là.</p>
+<figure class="shot"><button type="button" aria-label="Agrandir la capture : Terminal : docker logs conteneur-site-perso"><img src="assets/img/docker-site-004.png" alt="Terminal : docker logs conteneur-site-perso" loading="lazy"></button><figcaption>Journaux du conteneur : Nginx a démarré et lance ses processus <em>worker</em>.</figcaption></figure>
+<figure class="shot"><button type="button" aria-label="Agrandir la capture : Terminal : docker exec -it conteneur-site-perso sh puis ls /usr/share/nginx/html/"><img src="assets/img/docker-site-005.png" alt="Terminal : docker exec -it conteneur-site-perso sh puis ls /usr/share/nginx/html/" loading="lazy"></button><figcaption>Dans le conteneur, <code>ls /usr/share/nginx/html/</code> montre <code>50x.html</code> et <code>index.html</code> : ma page a bien été copiée par le Dockerfile.</figcaption></figure>
+
+<h2 id="nettoyage">6. Arrêt et nettoyage</h2>
+<pre class="term"><code>docker ps -a
+docker stop mon-premier-serveur conteneur-site-perso
+docker rm mon-premier-serveur conteneur-site-perso
+docker rmi mon-site-perso</code></pre>
+<figure class="shot"><button type="button" aria-label="Agrandir la capture : Terminal : docker ps -a, docker stop puis docker rm des deux conteneurs"><img src="assets/img/docker-site-006.png" alt="Terminal : docker ps -a, docker stop puis docker rm des deux conteneurs" loading="lazy"></button><figcaption><code>docker ps -a</code> liste les deux conteneurs actifs et un ancien conteneur arrêté. Les deux conteneurs sont ensuite arrêtés puis supprimés.</figcaption></figure>
+<figure class="shot"><button type="button" aria-label="Agrandir la capture : Terminal : docker rmi mon-site-perso"><img src="assets/img/docker-site-007.png" alt="Terminal : docker rmi mon-site-perso" loading="lazy"></button><figcaption>Suppression de l'image personnalisée : <code>Untagged</code> puis <code>Deleted</code>.</figcaption></figure>
+
+<h2 id="bilan">Ce que j'en retiens</h2>
+<ul>
+<li>Un <strong>Dockerfile</strong> décrit une image de façon reproductible ; l'image sert ensuite à créer autant de conteneurs que nécessaire.</li>
+<li>Le <strong>mappage de ports</strong> (<code>-p hôte:conteneur</code>) est ce qui rend un conteneur joignable depuis le navigateur.</li>
+<li><code>logs</code> et <code>exec</code> sont les deux outils de base pour comprendre ce qui se passe dans un conteneur.</li>
+<li>Il faut arrêter (<code>stop</code>) puis supprimer (<code>rm</code>) les conteneurs, et supprimer les images à part (<code>rmi</code>).</li></ul>
+
+<div class="pn"><a class="prev" href="projet-docker-commandes.html"><small>← Précédent</small>Docker : prise en main des commandes</a><a class="next" href="projet-kubernetes-concepts.html"><small>Suivant →</small>Kubernetes : les concepts clés</a></div>
+<div class="btn-group"><a class="btn ghost" href="projets.html"><i class='bx bx-left-arrow-alt'></i> Tous les projets</a></div>
+</div>
+</section>
+</main>
+<footer>© 2026 Oussama Denia</footer>
+<script src="site.js"></script>
+</body>
+</html>
